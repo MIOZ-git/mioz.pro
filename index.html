@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps Шпаргалка от MIOZ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h1>DevOps Шпаргалка от MIOZ</h1>
+        <!-- Поисковая строка -->
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Поиск по командам, комментариям...">
+            <div class="search-info">
+                <span id="search-count">0</span> результатов
+                <div class="quick-filters">
+                    <a class="quick-filter" href="#containers-header">Контейнеры</a>
+                    <a class="quick-filter" href="#orchestration-header">Оркестрация</a>
+                    <a class="quick-filter" href="#iac-header">Инфраструктура как код</a>
+                    <a class="quick-filter" href="#git-header">Git</a>
+                    <a class="quick-filter" href="#linux-header">Linux</a>
+                    <a class="quick-filter" href="#ci-cd-header">CI/CD</a>
+                    <a class="quick-filter" href="#monitoring-header">Мониторинг</a>
+                    <a class="quick-filter" href="#databases-header">Базы данных</a>
+                    <a class="quick-filter" href="#gitlab-header">GitLab</a>
+                </div>
+            </div>
+        </div>
+        <button class="toggle-all">Свернуть/развернуть все</button>
+        <button id="scroll-to-top" title="Наверх">↑ Наверх</button>
+    </div>
+    <div class="main-content">
+      <!-- Раздел Контейнеры -->
+      <div class="cheatsheet" data-section="containers" style="display: block;">
+          <h2 id="containers-header" class="collapsed"><span class="tag docker-tag">Контейнеры</span> Docker и контейнеризация<span class="results-count">55</span></h2>
+          <div class="collapsible collapsed">
+              <p>Docker — платформа для разработки, доставки и запуска приложений в контейнерах.</p>
+              <div class="note">
+                  <strong>Пример:</strong> Запуск nginx-контейнера:
+                  <pre class="docker">docker run --rm -d -p 8080:80 nginx:alpine</pre>
+              </div>
+              <h3>Основные команды Docker</h3>
+              <pre class="docker">docker version
+  # Показать версию Docker (клиент и сервер)
+  
+  docker info
+  # Показать системную информацию Docker
+  
+  docker images
+  # Список всех локальных образов
+  
+  docker image ls -a
+  # Подробный список образов (включая промежуточные)
+  
+  docker search nginx
+  # Поиск образов в Docker Hub
+  
+  docker pull nginx:alpine
+  # Скачать образ nginx с тегом alpine
+  
+  docker build -t myapp:1.0 -f Dockerfile.prod .
+  # Собрать образ с указанием Dockerfile и тега
+  
+  docker run -d --name web -p 8080:80 -v /data:/app/data -e ENV=prod myapp:1.0
+  # Запустить контейнер с параметрами:
+  # -d - в фоновом режиме
+  # --name - имя контейнера
+  # -p - проброс портов (хост:контейнер)
+  # -v - монтирование томов (хост:контейнер)
+  # -e - установка переменных окружения
+  
+  docker start/stop/restart web
+  # Управление состоянием контейнера
+  
+  docker pause/unpause web
+  # Приостановить/возобновить контейнер
+  
+  docker stats
+  # Показать статистику по ресурсам для всех контейнеров
+  
+  docker top web
+  # Показать процессы внутри контейнера
+  
+  docker inspect web
+  # Подробная информация о контейнере в JSON
+  
+  docker port web
+  # Показать проброшенные порты контейнера
+  
+  docker diff web
+  # Показать изменения файлов в контейнере
+  
+  docker cp web:/etc/nginx/nginx.conf ./nginx.conf
+  # Копировать файл из контейнера на хост
+  
+  docker cp ./config.json web:/app/config.json
+  # Копировать файл с хоста в контейнер
+  
+  docker export web &gt; web-container.tar
+  # Экспортировать контейнер в tar-архив
+  
+  docker import web-container.tar myapp:imported
+  # Импортировать контейнер из архива
+  
+  docker save myapp:1.0 &gt; myapp-1.0.tar
+  # Сохранить образ в файл
+  
+  docker load &lt; myapp-1.0.tar
+  # Загрузить образ из файла
+  
+  docker history myapp:1.0
+  # Показать историю сборки образа
+  
+  docker system df
+  # Показать использование диска Docker
+  
+  docker system prune
+  # Удалить неиспользуемые объекты (осторожно!)</pre>
+              <h3>Docker Compose</h3>
+              <div class="note">
+                  <strong>Пример docker-compose.yml:</strong>
+                  <pre class="docker">version: '3.8'
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"</pre>
+              </div>
+              <pre class="docker">docker-compose up -d --build
+  # Собрать и запустить сервисы в фоне
+  
+  docker-compose down -v
+  # Остановить и удалить контейнеры с томами
+  
+  docker-compose logs -f service1
+  # Показать логи сервиса с follow
+  
+  docker-compose ps
+  # Показать статус сервисов
+  
+  docker-compose exec service1 bash
+  # Выполнить команду в сервисе
+  
+  docker-compose config
+  # Проверить конфигурацию
+  
+  docker-compose pull
+  # Обновить образы сервисов</pre>
+              <h3>Пример Dockerfile</h3>
+              <pre class="docker"># Многоступенчатая сборка для уменьшения размера образа
+  FROM golang:1.18 as builder
+  WORKDIR /app
+  COPY . .
+  RUN go build -o myapp .
+  
+  FROM nginx:alpine
+  RUN rm /etc/nginx/conf.d/default.conf
+  COPY nginx.conf /etc/nginx/nginx.conf
+  COPY index.html /usr/share/nginx/html/
+  COPY style.css /usr/share/nginx/html/
+  COPY script.js /usr/share/nginx/html/
+  RUN apk add --no-cache ca-certificates
+  WORKDIR /root/
+  COPY --from=builder /app/myapp .
+  COPY --from=builder /app/config.yaml .
+  EXPOSE 8080
+  USER nobody
+  HEALTHCHECK --interval=30s --timeout=3s \
+    CMD curl -f http://localhost:8080/health || exit 1
+  CMD ["./myapp"]</pre>
+          </div>
+      </div>
+  
+      <!-- Раздел Оркестрация -->
+      <div class="cheatsheet" data-section="orchestration" style="display: block;">
+          <h2 id="orchestration-header" class="collapsed"><span class="tag kubernetes-tag">Оркестрация</span> Kubernetes и управление контейнерами<span class="results-count">142</span></h2>
+          <div class="collapsible collapsed">
+              <p>Kubernetes (k8s) — система для автоматического развертывания, масштабирования и управления контейнерами.</p>
+              <div class="note">
+                  <strong>Пример:</strong> Минимальный deployment nginx:
+                  <pre class="kubernetes">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80</pre>
+              </div>
+              <h3>Основные команды Kubernetes</h3>
+              <pre class="kubernetes">kubectl cluster-info
+  # Информация о кластере
+  
+  kubectl config view
+  # Показать конфигурацию kubectl
+  
+  kubectl get all --all-namespaces
+  # Показать все ресурсы во всех namespaces
+  
+  kubectl api-resources
+  # Показать все доступные типы ресурсов
+  
+  kubectl get pods -o wide
+  # Показать поды с дополнительной информацией
+  
+  kubectl get pods --show-labels
+  # Показать поды с их метками
+  
+  kubectl get pods -l app=nginx
+  # Показать поды с определенной меткой
+  
+  kubectl get pods --field-selector status.phase=Running
+  # Показать только работающие поды
+  
+  kubectl get pods -w
+  # Watch mode - обновление в реальном времени
+  
+  kubectl describe pod mypod
+  # Подробная информация о поде
+  
+  kubectl logs mypod -c container1 --tail=50 -f
+  # Показать логи с follow (для контейнера в мультиконтейнерном поде)
+  
+  kubectl logs -l app=nginx --all-containers=true
+  # Логи всех контейнеров по селектору
+  
+  kubectl exec -it mypod -c container1 -- /bin/sh
+  # Войти в контейнер в интерактивном режиме
+  
+  kubectl cp mypod:/etc/nginx/nginx.conf ./nginx.conf
+  # Копировать файл из пода
+  
+  kubectl port-forward mypod 8080:80
+  # Проброс порта пода на локальную машину
+  
+  kubectl attach mypod -i -t
+  # Подключиться к работающему контейнеру
+  
+  kubectl run -i --tty busybox --image=busybox --restart=Never -- sh
+  # Запустить временный под для отладки
+  
+  kubectl create deployment nginx --image=nginx:1.19
+  # Создать deployment
+  
+  kubectl scale deployment nginx --replicas=3
+  # Масштабировать deployment
+  
+  kubectl autoscale deployment nginx --min=2 --max=5 --cpu-percent=80
+  # Настроить автоскейлинг
+  
+  kubectl rollout status deployment/nginx
+  # Проверить статус обновления
+  
+  kubectl rollout history deployment/nginx
+  # Показать историю rollout'ов
+  
+  kubectl rollout undo deployment/nginx --to-revision=2
+  # Откатиться к определенной ревизии
+  
+  kubectl set image deployment/nginx nginx=nginx:1.20
+  # Обновить образ в deployment
+  
+  kubectl edit deployment/nginx
+  # Редактировать ресурс в редакторе
+  
+  kubectl patch deployment/nginx -p '{"spec":{"template":{"spec":{"containers":[{"name":"nginx","image":"nginx:1.21"}]}}}}'
+  # Частичное обновление ресурса
+  
+  kubectl apply -f config.yaml
+  # Применить конфигурацию
+  
+  kubectl delete -f config.yaml
+  # Удалить ресурсы из конфигурации
+  
+  kubectl get events --sort-by=.metadata.creationTimestamp
+  # Показать события с сортировкой по времени
+  
+  kubectl top pod
+  # Показать использование ресурсов подами
+  
+  kubectl top node
+  # Показать использование ресурсов нодами
+  
+  kubectl cordon node1
+  # Пометить нод как unschedulable
+  
+  kubectl drain node1 --ignore-daemonsets
+  # Подготовить нод к обслуживанию
+  
+  kubectl uncordon node1
+  # Снова сделать нод schedulable
+  
+  kubectl taint nodes node1 key=value:NoSchedule
+  # Добавить taint к ноде
+  
+  kubectl create secret generic mysecret --from-literal=username=admin --from-literal=password=secret
+  # Создать secret
+  
+  kubectl create configmap myconfig --from-file=config.properties
+  # Создать configmap
+  
+  kubectl get secret mysecret -o jsonpath='{.data.password}' | base64 --decode
+  # Декодировать secret</pre>
+  
+              <h3>Примеры манифестов</h3>
+              
+              <h4>Deployment с readiness/liveness пробами</h4>
+              <pre class="kubernetes">apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: webapp
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: webapp
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: webapp
+      spec:
+        containers:
+        - name: webapp
+          image: myapp:1.2.0
+          ports:
+          - containerPort: 8080
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          envFrom:
+          - configMapRef:
+              name: app-config
+          - secretRef:
+              name: app-secrets</pre>
+              
+              <h4>HorizontalPodAutoscaler</h4>
+              <pre class="kubernetes">apiVersion: autoscaling/v2beta2
+  kind: HorizontalPodAutoscaler
+  metadata:
+    name: webapp-hpa
+  spec:
+    scaleTargetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: webapp
+    minReplicas: 2
+    maxReplicas: 10
+    metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50</pre>
+          </div>
+      </div>
+  
+      <!-- Раздел Инфраструктура как код -->
+      <div class="cheatsheet" data-section="iac" style="display: block;">
+          <h2 id="iac-header" class="collapsed"><span class="tag terraform-tag">Инфраструктура как код</span> Terraform, Ansible и др.<span class="results-count">0</span></h2>
+          <div class="collapsible collapsed">
+              <p>Инструменты для автоматизации создания, управления и конфигурирования инфраструктуры: Terraform, Ansible, CloudFormation.</p>
+              <div class="note">
+                  <strong>Пример:</strong> Минимальный main.tf для AWS EC2:
+                  <pre class="terraform">provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "web" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+}</pre>
+              </div>
+              <h3>Terraform</h3>
+              <pre class="terraform">terraform init -upgrade
+  # Инициализация с обновлением провайдеров
+  
+  terraform plan -out=tfplan
+  # Сохранить план в файл
+  
+  terraform apply tfplan
+  # Применить сохраненный план
+  
+  terraform apply -target=aws_instance.web
+  # Применить только для определенного ресурса
+  
+  terraform apply -var="instance_type=t2.large"
+  # Передать переменную через командную строку
+  
+  terraform apply -var-file="prod.tfvars"
+  # Использовать файл с переменными
+  
+  terraform refresh
+  # Обновить state файл в соответствии с реальной инфраструктурой
+  
+  terraform output
+  # Показать output переменные
+  
+  terraform output instance_public_ip
+  # Показать конкретную output переменную
+  
+  terraform state list
+  # Показать все ресурсы в state
+  
+  terraform state show aws_instance.web
+  # Показать детали ресурса
+  
+  terraform state mv aws_instance.old aws_instance.new
+  # Переименовать ресурс в state
+  
+  terraform state pull &gt; state.json
+  # Сохранить state в файл
+  
+  terraform import aws_instance.web i-1234567890abcdef0
+  # Импортировать существующий ресурс в state
+  
+  terraform workspace new prod
+  # Создать новое workspace
+  
+  terraform workspace select dev
+  # Переключиться на workspace
+  
+  terraform workspace list
+  # Показать все workspace
+  
+  terraform graph | dot -Tsvg &gt; graph.svg
+  # Сгенерировать визуализацию зависимостей
+  
+  terraform fmt
+  # Отформатировать конфигурационные файлы
+  
+  terraform validate
+  # Проверить синтаксис конфигурации
+  
+  terraform taint aws_instance.web
+  # Пометить ресурс для пересоздания
+  
+  terraform force-unlock LOCK_ID
+  # Разблокировать state (если lock застрял)
+  
+  terraform console
+  # Интерактивная консоль для тестирования выражений</pre>
+  
+              <h3>Ansible</h3>
+              <div class="note">
+                  <strong>Пример playbook:</strong>
+                  <pre class="ansible">---
+- name: Установка nginx
+  hosts: web
+  become: yes
+  tasks:
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present</pre>
+                  <strong>Пример inventory:</strong>
+                  <pre class="ansible">[web]
+web1 ansible_host=192.168.1.10 ansible_user=ubuntu
+web2 ansible_host=192.168.1.11 ansible_user=ubuntu</pre>
+                  <strong>Запуск playbook с переменными:</strong>
+                  <pre class="ansible">ansible-playbook playbook.yml -i inventory.ini -e "nginx_port=8080"</pre>
+              </div>
+              <pre class="ansible">ansible --version
+  # Показать версию Ansible
+  
+  ansible all -i inventory.ini -m ping
+  # Проверить подключение ко всем хостам
+  
+  ansible-playbook playbook.yml -i inventory.ini --limit webservers
+  # Запустить плейбук только для webservers
+  
+  ansible-playbook playbook.yml -i inventory.ini --tags "deploy"
+  # Запустить только tasks с тегом deploy
+  
+  ansible-playbook playbook.yml -i inventory.ini --skip-tags "skipme"
+  # Пропустить tasks с тегом skipme
+  
+  ansible-playbook playbook.yml -i inventory.ini --start-at-task "Install packages"
+  # Начать выполнение с определенного task
+  
+  ansible-playbook playbook.yml -i inventory.ini --step
+  # Пошаговое выполнение с подтверждением
+  
+  ansible-playbook playbook.yml -i inventory.ini --check
+  # Проверить изменения без реального выполнения (dry run)
+  
+  ansible-playbook playbook.yml -i inventory.ini --diff
+  # Показать различия в изменяемых файлах
+  
+  ansible-playbook playbook.yml -i inventory.ini -e "var1=value1 var2=value2"
+  # Передать дополнительные переменные
+  
+  ansible-playbook playbook.yml -i inventory.ini -v
+  # Подробный вывод (-vv, -vvv для большей детализации)
+  
+  ansible-galaxy init role_name
+  # Создать структуру новой роли
+  
+  ansible-galaxy install username.role_name
+  # Установить роль из Ansible Galaxy
+  
+  ansible-galaxy collection install namespace.collection
+  # Установить collection
+  
+  ansible-inventory -i inventory.ini --list
+  # Показать inventory в JSON
+  
+  ansible-inventory -i inventory.ini --graph
+  # Показать inventory в виде графа
+  
+  ansible-doc yum
+  # Показать документацию по модулю yum
+  
+  ansible-doc -t lookup file
+  # Показать документацию по lookup plugin file</pre>
+  
+              <h3>AWS CloudFormation</h3>
+              <pre class="iac"># Пример запуска stack
+aws cloudformation deploy --template-file template.yaml --stack-name mystack
+  # Запуск/обновление stack
+
+# Проверить статус stack
+aws cloudformation describe-stacks --stack-name mystack
+
+# Удалить stack
+aws cloudformation delete-stack --stack-name mystack</pre>
+          </div>
+      </div>
+  
+      <!-- Раздел Git -->
+      <div class="cheatsheet" data-section="git" style="display: block;">
+          <h2 id="git-header" class=""><span class="tag git-tag">Git</span> Система контроля версий<span class="results-count">119</span></h2>
+          <div class="collapsible">
+              <p>Git - распределённая система управления версиями файлов.</p>
+              <div class="note">
+                  <strong>Пример:</strong> Клонирование репозитория:
+                  <pre class="git">git clone https://github.com/user/repo.git</pre>
+              </div>
+              <h3>Основные команды</h3>
+              <pre class="git">git init
+  # Инициализировать новый репозиторий
+  
+  git clone https://github.com/user/repo.git
+  # Клонировать удаленный репозиторий
+  
+  git clone --branch develop --single-branch https://github.com/user/repo.git
+  # Клонировать только определенную ветку
+  
+  git status
+  # Показать состояние рабочей директории
+  
+  git add file.txt
+  # Добавить файл в индекс
+  
+  git add .
+  # Добавить все измененные файлы в индекс
+  
+  git add -p
+  # Интерактивное добавление изменений
+  
+  git commit -m "Commit message"
+  # Закоммитить изменения
+  
+  git commit --amend
+  # Изменить последний коммит (сообщение или содержимое)
+  
+  git commit --amend --no-edit
+  # Добавить изменения в последний коммит без изменения сообщения
+  
+  git reset HEAD file.txt
+  # Убрать файл из индекса
+  
+  git checkout -- file.txt
+  # Отменить изменения в файле
+  
+  git log
+  # Показать историю коммитов
+  
+  git log --oneline --graph --all
+  # Компактный вывод истории с графом
+  
+  git log -p file.txt
+  # Показать историю изменений файла
+  
+  git log --since="1 week ago" --until="yesterday"
+  # Показать коммиты за период
+  
+  git log --author="John"
+  # Показать коммиты определенного автора
+  
+  git log --grep="bugfix"
+  # Поиск коммитов по сообщению
+  
+  git diff
+  # Показать непроиндексированные изменения
+  
+  git diff --cached
+  # Показать проиндексированные изменения
+  
+  git diff HEAD
+  # Показать все изменения (индексированные и нет)
+  
+  git diff branch1..branch2
+  # Сравнить две ветки
+  
+  git diff commit1..commit2
+  # Сравнить два коммита
+  
+  git blame file.txt
+  # Показать автора каждой строки файла
+  
+  git checkout -b new-branch
+  # Создать и переключиться на новую ветку
+  
+  git checkout branch-name
+  # Переключиться на ветку
+  
+  git branch -d branch-name
+  # Удалить ветку
+  
+  git branch -D branch-name
+  # Принудительно удалить ветку
+  
+  git branch -m old-name new-name
+  # Переименовать текущую ветку
+  
+  git branch -a
+  # Показать все ветки (локальные и удаленные)
+  
+  git branch -vv
+  # Показать связи между локальными и удаленными ветками
+  
+  git merge branch-name
+  # Слить ветку в текущую
+  
+  git merge --no-ff branch-name
+  # Слить ветку с созданием коммита слияния
+  
+  git rebase branch-name
+  # Перебазировать текущую ветку
+  
+  git rebase -i HEAD~3
+  # Интерактивное перебазирование последних 3 коммитов
+  
+  git cherry-pick commit-hash
+  # Перенести коммит в текущую ветку
+  
+  git stash
+  # Временно сохранить изменения
+  
+  git stash list
+  # Показать список stash'ей
+  
+  git stash apply stash@{1}
+  # Применить определенный stash
+  
+  git stash pop
+  # Применить и удалить последний stash
+  
+  git stash drop stash@{1}
+  # Удалить определенный stash
+  
+  git stash -u
+  # Сохранить в stash включая untracked файлы
+  
+  git clean -fd
+  # Удалить untracked файлы и директории
+  
+  git clean -n
+  # Показать что будет удалено (dry run)
+  
+  git remote -v
+  # Показать удаленные репозитории
+  
+  git remote add origin https://github.com/user/repo.git
+  # Добавить удаленный репозиторий
+  
+  git remote set-url origin https://github.com/user/new-repo.git
+  # Изменить URL удаленного репозитория
+  
+  git fetch origin
+  # Получить изменения с удаленного репозитория
+  
+  git pull origin main
+  # Получить изменения и слить с текущей веткой
+  
+  git pull --rebase origin main
+  # Получить изменения и перебазировать текущую ветку
+  
+  git push origin branch-name
+  # Отправить изменения в удаленный репозиторий
+  
+  git push origin --delete branch-name
+  # Удалить ветку в удаленном репозитории
+  
+  git push --tags
+  # Отправить теги в удаленный репозиторий
+  
+  git tag v1.0.0
+  # Создать легковесный тег
+  
+  git tag -a v1.0.0 -m "Release version 1.0.0"
+  # Создать аннотированный тег
+  
+  git tag -d v1.0.0
+  # Удалить тег
+  
+  git show v1.0.0
+  # Показать информацию о теге
+  
+  git revert commit-hash
+  # Отменить изменения коммита новым коммитом
+  
+  git reset --soft HEAD~1
+  # Отменить последний коммит, сохранив изменения в индексе
+  
+  git reset --mixed HEAD~1
+  # Отменить последний коммит, сохранив изменения в рабочей директории
+  
+  git reset --hard HEAD~1
+  # Полностью удалить последний коммит и все изменения
+  
+  git reflog
+  # Показать историю всех действий (для восстановления)
+  
+  git bisect start
+  git bisect bad
+  git bisect good v1.0.0
+  # Начать бинарный поиск бага
+  
+  git submodule add https://github.com/user/repo.git path/to/submodule
+  # Добавить подмодуль
+  
+  git submodule update --init --recursive
+  # Инициализировать и обновить подмодули
+  
+  git worktree add ../new-branch branch-name
+  # Добавить рабочую директорию для ветки
+  
+  git gc
+  # Оптимизировать репозиторий (garbage collection)
+  
+  git fsck
+  # Проверить целостность репозитория</pre>
+  
+              <h3>Полезные алиасы для .gitconfig</h3>
+              <pre class="git">[alias]
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    unstage = reset HEAD --
+    last = log -1 HEAD
+    lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset' --abbrev-commit
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit --all
+    find = "!git log --pretty=format:\"%Cgreen%H %Cblue%s\" | grep -i"
+    changes = log -p
+    who = shortlog -s --
+    whatis = show -s --pretty='tformat:%h (%s, %ad)' --date=short
+    undo = reset HEAD~1
+    amend = commit --amend
+    wip = commit -am \"WIP\"</pre>
+          </div>
+      </div>
+  
+      <!-- Раздел Linux/Bash -->
+      <div class="cheatsheet" data-section="linux" style="display: block;">
+          <h2 id="linux-header" class="collapsed"><span class="tag linux-tag">Linux/Bash</span> Команды и инструменты<span class="results-count">148</span></h2>
+          <div class="collapsible collapsed">
+              <p>Основные команды для работы в Linux терминале и полезные инструменты.</p>
+              <div class="note">
+                  <strong>Пример:</strong> Поиск строки в файлах:
+                  <pre class="linux">grep -r "pattern" /path/to/dir</pre>
+              </div>
+              <h3>Nginx</h3>
+              <div class="note">
+                  <strong>Пример базового reverse proxy:</strong>
+                  <pre class="linux">server {
+    listen 80;
+    server_name example.com;
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}</pre>
+              </div>
+              <h4>Основные команды</h4>
+              <pre class="linux">sudo nginx -t
+# Проверить конфиг на ошибки
+
+sudo systemctl reload nginx
+# Перезагрузить nginx без простоя
+
+sudo systemctl restart nginx
+# Полная перезагрузка
+
+sudo tail -f /var/log/nginx/access.log
+# Смотреть логи доступа
+
+sudo tail -f /var/log/nginx/error.log
+# Смотреть логи ошибок</pre>
+              <h4>Обслуживание статики</h4>
+              <pre class="linux">server {
+    listen 80;
+    server_name static.example.com;
+    root /var/www/static;
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}</pre>
+              <h3>Работа с файлами и директориями</h3>
+              <pre class="linux">ls -lah
+  # Показать файлы с детальной информацией (включая скрытые)
+  
+  tree -L 2
+  # Показать дерево директорий с глубиной 2 уровня
+  
+  find /path -name "*.log" -type f -mtime +7 -size +1M
+  # Найти файлы .log старше 7 дней и больше 1MB
+  
+  find . -type f -exec grep -l "pattern" {} \;
+  # Найти файлы содержащие текст
+  
+  grep -r "pattern" /path
+  # Рекурсивный поиск текста в файлах
+  
+  grep -v "exclude" file.txt
+  # Исключить строки с текстом
+  
+  grep -A 3 -B 2 "pattern" file.txt
+  # Показать контекст (3 строки после, 2 до)
+  
+  awk '{print $1}' file.txt
+  # Вывести первый столбец файла
+  
+  awk -F: '{print $1}' /etc/passwd
+  # Разделить по : и вывести первый столбец
+  
+  awk 'NR &gt;= 10 &amp;&amp; NR &lt;= 20' file.txt
+  # Вывести строки с 10 по 20
+  
+  sed 's/old/new/g' file.txt
+  # Заменить текст во всем файле
+  
+  sed -i.bak 's/old/new/g' file.txt
+  # Заменить с созданием резервной копии
+  
+  sed '/pattern/d' file.txt
+  # Удалить строки содержащие pattern
+  
+  sort file.txt | uniq -c | sort -nr
+  # Подсчитать и отсортировать уникальные строки
+  
+  cut -d: -f1,6 /etc/passwd
+  # Вырезать поля 1 и 6 разделенные :
+  
+  tr '[:lower:]' '[:upper:]' &lt; file.txt
+  # Преобразовать текст в верхний регистр
+  
+  diff -u file1.txt file2.txt
+  # Сравнить файлы в унифицированном формате
+  
+  cmp file1.txt file2.txt
+  # Сравнить файлы побайтово
+  
+  md5sum file.txt
+  # Вычислить MD5 хеш файла
+  
+  sha256sum file.txt
+  # Вычислить SHA256 хеш файла
+  
+  tar -czvf archive.tar.gz /path
+  # Создать сжатый tar архив
+  
+  tar -xzvf archive.tar.gz
+  # Распаковать tar архив
+  
+  zip -r archive.zip /path
+  # Создать ZIP архив
+  
+  unzip archive.zip
+  # Распаковать ZIP архив
+  
+  rsync -avz --delete /source/ user@host:/dest/
+  # Синхронизировать директории (с удалением лишнего)
+  
+  scp file.txt user@host:/remote/path/
+  # Копировать файл по SSH
+  
+  scp -r dir/ user@host:/remote/path/
+  # Копировать директорию рекурсивно
+  
+  dd if=/dev/sda of=disk.img bs=4M status=progress
+  # Создать образ диска
+  
+  dd if=disk.img of=/dev/sdb bs=4M status=progress
+  # Восстановить образ на диск</pre>
+  
+              <h3>Работа с процессами</h3>
+              <pre class="linux">ps aux
+  # Показать все процессы
+  
+  ps -ef --forest
+  # Показать процессы в виде дерева
+  
+  top
+  # Интерактивный монитор процессов
+  
+  htop
+  # Улучшенная версия top
+  
+  pgrep -l nginx
+  # Найти PID процессов по имени
+  
+  pstree -p
+  # Показать дерево процессов с PID
+  
+  kill -9 PID
+  # Принудительно завершить процесс
+  
+  killall -9 process_name
+  # Принудительно завершить все процессы по имени
+  
+  pkill -f "pattern"
+  # Завершить процессы по шаблону
+  
+  nice -n 10 command
+  # Запустить команду с пониженным приоритетом
+  
+  renice 15 -p PID
+  # Изменить приоритет существующего процесса
+  
+  nohup command &amp;
+  # Запустить команду игнорируя HUP сигнал
+  
+  jobs
+  # Показать фоновые задачи текущей сессии
+  
+  bg %1
+  # Перевести задачу 1 в фон
+  
+  fg %1
+  # Вернуть задачу 1 на передний план
+  
+  disown -h %1
+  # Отвязать задачу от текущей сессии
+  
+  time command
+  # Измерить время выполнения команды
+  
+  timeout 10 command
+  # Завершить команду через 10 секунд
+  
+  watch -n 1 "command"
+  # Выполнять команду каждую секунду
+  
+  crontab -e
+  # Редактировать crontab текущего пользователя
+  
+  systemctl list-units --type=service
+  # Показать все сервисы systemd
+  
+  systemctl start/stop/restart service
+  # Управление сервисом
+  
+  systemctl enable/disable service
+  # Включить/отключить автозапуск сервиса
+  
+  journalctl -u nginx -f
+  # Показать логи сервиса с follow
+  
+  journalctl --since "1 hour ago"
+  # Показать логи за последний час</pre>
+  
+              <h3>Сеть и безопасность</h3>
+              <pre class="linux">ip a
+  # Показать сетевые интерфейсы
+  
+  ip route
+  # Показать таблицу маршрутизации
+  
+  ss -tulnp
+  # Показать открытые порты и процессы
+  
+  netstat -tulnp
+  # Альтернатива ss (устаревшая)
+  
+  ping google.com
+  # Проверить доступность хоста
+  
+  traceroute google.com
+  # Показать маршрут к хосту
+  
+  mtr google.com
+  # Комбинация ping и traceroute
+  
+  dig google.com
+  # DNS запрос
+  
+  dig -x 8.8.8.8
+  # Обратный DNS запрос
+  
+  nslookup google.com
+  # Альтернатива dig
+  
+  whois google.com
+  # Информация о домене
+  
+  curl -I https://google.com
+  # Запрос HTTP заголовков
+  
+  curl -o file.txt https://example.com/file.txt
+  # Скачать файл
+  
+  wget https://example.com/file.txt
+  # Альтернатива curl для скачивания
+  
+  ssh user@host -p 2222 -i ~/.ssh/id_rsa
+  # Подключиться по SSH с указанием порта и ключа
+  
+  ssh-copy-id user@host
+  # Скопировать SSH ключ на удаленный сервер
+  
+  scp -P 2222 file.txt user@host:/remote/path/
+  # Копировать файл по SSH с указанием порта
+  
+  rsync -e "ssh -p 2222" file.txt user@host:/remote/path/
+  # Rsync с указанием SSH порта
+  
+  openssl s_client -connect google.com:443 -servername google.com
+  # Проверить SSL соединение
+  
+  openssl x509 -in cert.pem -text -noout
+  # Просмотреть SSL сертификат
+  
+  iptables -L -n -v
+  # Показать правила iptables
+  
+  ufw status
+  # Показать статус Uncomplicated Firewall
+  
+  fail2ban-client status
+  # Показать статус Fail2Ban
+  
+  chmod 600 file.txt
+  # Изменить права на файл (только владелец)
+  
+  chmod +x script.sh
+  # Сделать файл исполняемым
+  
+  chown user:group file.txt
+  # Изменить владельца и группу файла
+  
+  chattr +i file.txt
+  # Сделать файл неизменяемым
+  
+  lsattr file.txt
+  # Показать атрибуты файла
+  
+  useradd -m -s /bin/bash username
+  # Создать пользователя с домашней директорией
+  
+  usermod -aG sudo username
+  # Добавить пользователя в группу sudo
+  
+  passwd username
+  # Изменить пароль пользователя
+  
+  visudo
+  # Безопасное редактирование sudoers
+  
+  su - username
+  # Переключиться на пользователя
+  
+  sudo -i
+  # Переключиться на root
+  
+  last
+  # Показать историю входа пользователей
+  
+  who
+  # Показать текущих пользователей
+  
+  w
+  # Показать кто в системе и что делает</pre>
+  
+              <h3>Мониторинг и производительность</h3>
+              <pre class="linux">free -h
+  # Показать использование памяти
+  
+  vmstat 1
+  # Статистика виртуальной памяти (каждую секунду)
+  
+  mpstat -P ALL 1
+  # Статистика CPU (каждую секунду)
+  
+  iostat -xz 1
+  # Статистика дисков (каждую секунду)
+  
+  dstat -tcdngy 1
+  # Комплексная статистика системы
+  
+  sar -u 1 3
+  # Историческая статистика CPU
+  
+  df -h
+  # Показать использование дискового пространства
+  
+  du -sh *
+  # Показать размер директорий
+  
+  du -xhd1 / | sort -h
+  # Показать размер корневых директорий с сортировкой
+  
+  lsof -i :80
+  # Показать процессы использующие порт 80
+  
+  lsof -u username
+  # Показать файлы открытые пользователем
+  
+  strace -p PID
+  # Трассировка системных вызовов процесса
+  
+  ltrace -p PID
+  # Трассировка библиотечных вызовов процесса
+  
+  perf top
+  # Профилирование системы в реальном времени
+  
+  tcpdump -i eth0 port 80 -w capture.pcap
+  # Захват сетевого трафика на порту 80
+  
+  iftop -i eth0
+  # Мониторинг сетевого трафика в реальном времени
+  
+  nethogs eth0
+  # Мониторинг трафика по процессам
+  
+  dmesg | tail -20
+  # Показать последние сообщения ядра
+  
+  cat /proc/cpuinfo
+  # Информация о CPU
+  
+  cat /proc/meminfo
+  # Подробная информация о памяти
+  
+  cat /proc/loadavg
+  # Показать среднюю загрузку системы
+  
+  uptime
+  # Показать uptime и среднюю загрузку
+  
+  uname -a
+  # Показать информацию о системе
+  
+  lsblk
+  # Показать блочные устройства
+  
+  blkid
+  # Показать UUID блочных устройств
+  
+  lsmod
+  # Показать загруженные модули ядра
+  
+  modinfo module_name
+  # Показать информацию о модуле ядра</pre>
+  
+              <h3>Полезные Bash команды и скрипты</h3>
+              <pre class="linux">history | grep "pattern"
+  # Поиск в истории команд
+  
+  !!
+  # Повторить последнюю команду
+  
+  !$
+  # Последний аргумент предыдущей команды
+  
+  !ssh
+  # Выполнить последнюю команду начинающуюся на ssh
+  
+  ctrl + r
+  # Обратный поиск по истории
+  
+  ctrl + a / ctrl + e
+  # Переместить курсор в начало/конец строки
+  
+  alt + b / alt + f
+  # Переместить курсор на слово назад/вперед
+  
+  ctrl + u / ctrl + k
+  # Удалить до начала/конца строки
+  
+  ctrl + w
+  # Удалить предыдущее слово
+  
+  ctrl + l
+  # Очистить экран (аналог clear)
+  
+  ssh-keygen -t rsa -b 4096
+  # Сгенерировать SSH ключ
+  
+  for i in {1..10}; do echo $i; done
+  # Цикл от 1 до 10
+  
+  for file in *.txt; do echo $file; done
+  # Цикл по файлам
+  
+  while true; do date; sleep 1; done
+  # Бесконечный цикл с задержкой
+  
+  if [ -f "$file" ]; then echo "Exists"; fi
+  # Проверить существование файла
+  
+  [ -d "/path" ] &amp;&amp; echo "Directory exists"
+  # Проверить существование директории
+  
+  [ "$var" = "value" ] || echo "Not equal"
+  # Проверить равенство переменной
+  
+  case "$var" in
+    start) echo "Starting";;
+    stop) echo "Stopping";;
+    *) echo "Unknown";;
+  esac
+  # Конструкция case
+  
+  function name() { echo "$1"; }
+  # Определение функции
+  
+  echo {A,B}.js
+  # Генерация комбинаций: A.js B.js
+  
+  echo file.{txt,log}
+  # Генерация: file.txt file.log
+  
+  mkdir -p /path/to/dir
+  # Создать директорию с родительскими
+  
+  mktemp -d
+  # Создать временную директорию
+  
+  cat &lt; file.txt
+  line1
+  line2
+  EOF
+  # Создать файл с многострочным содержимым
+  
+  tee file.txt &lt;&lt;&lt; "text"
+  # Записать в файл и вывести на экран
+  
+  column -t -s: /etc/passwd
+  # Показать файл в виде таблицы
+  
+  xargs -n1 -P4 command &lt; list.txt
+  # Параллельное выполнение (4 процесса)
+  
+  parallel -j4 command ::: arg1 arg2 arg3
+  # Параллельное выполнение с GNU Parallel
+  
+  screen -S session_name
+  # Создать сессию screen
+  
+  tmux new -s session_name
+  # Создать сессию tmux
+  
+  nohup command &amp;&gt; output.log &amp;
+  # Запустить команду в фоне с выводом в файл
+  
+  watch -n1 -d "command"
+  # Выполнять команду каждую секунду с подсветкой изменений
+  
+  script -a output.txt
+  # Записать сессию терминала в файл</pre>
+          </div>
+      </div>
+  
+      <!-- Раздел CI/CD -->
+      <div class="cheatsheet" data-section="ci-cd" style="display: block;">
+          <h2 id="ci-cd-header" class="collapsed"><span class="tag ci-cd-tag">CI/CD</span> Непрерывная интеграция и доставка<span class="results-count">162</span></h2>
+          <div class="collapsible collapsed">
+              <p>Инструменты для автоматизации процессов разработки и развертывания.</p>
+              <div class="note">
+                  <strong>Пример:</strong> Минимальный .gitlab-ci.yml:
+                  <pre class="ci-cd">stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - echo "Hello, CI!"</pre>
+              </div>
+              <h3>GitHub Actions</h3>
+              <pre class="ci-cd">name: CI Pipeline
+  
+  on:
+    push:
+      branches: [ main ]
+    pull_request:
+      branches: [ main ]
+  
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      
+      steps:
+      - uses: actions/checkout@v2
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Run tests
+        run: npm test
+        
+      - name: Build project
+        run: npm run build
+        
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: build/
+          
+    deploy:
+      needs: build
+      runs-on: ubuntu-latest
+      if: github.ref == 'refs/heads/main'
+      
+      steps:
+      - uses: actions/checkout@v2
+      
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/html
+            rm -rf *
+            cp -r ~/build/* .</pre>
+  
+              <h3>GitLab</h3>
+              <pre class="ci-cd"># Описание
+GitLab — платформа для CI/CD, управления репозиториями, задачами и DevOps-процессами.
+
+# Основные команды gitlab-runner
+sudo gitlab-runner register
+  # Регистрация нового runner
+
+gitlab-runner list
+  # Список всех runner'ов
+
+gitlab-runner status
+  # Статус runner'а
+
+gitlab-runner run
+  # Запуск runner'а вручную
+
+# Пример .gitlab-ci.yml для Node.js
+stages:
+  - install
+  - test
+  - build
+
+install:
+  stage: install
+  script:
+    - npm ci
+
+test:
+  stage: test
+  script:
+    - npm test
+
+build:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+# Пример деплоя через SSH
+.deploy_prod:
+  stage: deploy
+  script:
+    - rsync -avz ./dist/ user@host:/var/www/html
+  only:
+    - main
+
+# Пример вызова API для создания issue
+curl --request POST --header "PRIVATE-TOKEN: <token>" \
+  --data "{\"title\":\"Bug\",\"description\":\"Описание бага\"}" \
+  "https://gitlab.example.com/api/v4/projects/1/issues"
+
+# Документация: https://docs.gitlab.com/ee/ci/
+</pre>
+  
+              <h3>Jenkins</h3>
+              <pre class="ci-cd"># Основные команды Jenkins CLI
+java -jar jenkins-cli.jar -s http://localhost:8080/ list-jobs
+  # Список всех задач
+
+java -jar jenkins-cli.jar -s http://localhost:8080/ build my-job -p param1=value1
+  # Запустить задачу с параметрами
+
+java -jar jenkins-cli.jar -s http://localhost:8080/ console my-job
+  # Просмотреть логи выполнения задачи
+
+java -jar jenkins-cli.jar -s http://localhost:8080/ reload-configuration
+  # Перезагрузить конфиг Jenkins
+
+# Пример Freestyle Job (shell steps)
+Команда:
+git clone https://github.com/user/repo.git
+./deploy.sh
+
+# Пример Declarative Pipeline (Jenkinsfile)
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        sh 'make build'
+      }
+    }
+    stage('Test') {
+      steps {
+        sh 'make test'
+      }
+    }
+    stage('Deploy') {
+      when {
+        branch 'main'
+      }
+      steps {
+        sh './deploy.sh'
+      }
+    }
+  }
+  post {
+    success {
+      mail to: 'devops@example.com', subject: 'Build Success', body: 'Сборка прошла успешно!'
+    }
+    failure {
+      mail to: 'devops@example.com', subject: 'Build Failed', body: 'Ошибка сборки!'
+    }
+  }
+}
+</pre>
+  
+              <h3>Argo CD (GitOps)</h3>
+              <pre class="ci-cd">apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    name: myapp
+    namespace: argocd
+  spec:
+    project: default
+    source:
+      repoURL: https://github.com/user/repo.git
+      targetRevision: HEAD
+      path: k8s/overlays/production
+      helm:
+        valueFiles:
+          - values.yaml
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: myapp
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - CreateNamespace=true
+    ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jsonPointers:
+          - /spec/replicas</pre>
+          </div>
+      </div>
+  
+      <!-- Раздел Мониторинг -->
+      <div class="cheatsheet" data-section="monitoring" style="display: block;">
+          <h2 id="monitoring-header" class="collapsed"><span class="tag monitoring-tag">Мониторинг</span> Инструменты и команды<span class="results-count">118</span></h2>
+          <div class="collapsible collapsed">
+              <p>Системы мониторинга и полезные команды для диагностики.</p>
+              <div class="note">
+                  <strong>Пример:</strong> Prometheus запрос:
+                  <pre class="monitoring">sum(rate(http_requests_total[5m])) by (job)</pre>
+              </div>
+              <h3>Prometheus Query Language (PromQL)</h3>
+              <pre class="monitoring">up
+  # Статус endpoints (1 = up, 0 = down)
+  
+  rate(http_requests_total[5m])
+  # Скорость HTTP запросов за 5 минут
+  
+  sum by (status_code) (rate(http_requests_total[5m]))
+  # Группировка по коду статуса
+  
+  node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100
+  # Процент доступной памяти
+  
+  (1 - avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100
+  # Загрузка CPU в процентах
+  
+  predict_linear(node_filesystem_free_bytes[1h], 4*3600) &lt; 0
+  # Предсказание заполнения диска через 4 часа
+  
+  histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+  # 95-й перцентиль времени ответа
+  
+  count by (pod) (container_memory_usage_bytes{namespace="production"})
+  # Использование памяти по подам
+  
+  topk(3, sum by (pod) (rate(container_cpu_usage_seconds_total[5m])))
+  # Топ 3 пода по использованию CPU
+  
+  absent(up{job="api"} == 1)
+  # Оповещение если метрика отсутствует</pre>
+  
+              <h3>Grafana Dashboard Variables</h3>
+              <pre class="monitoring"># Переменные для фильтрации
+  - name: namespace
+    label: Namespace
+    type: query
+    query: label_values(kube_pod_info, namespace)
+  
+  - name: pod
+    label: Pod
+    type: query
+    query: label_values(kube_pod_info{namespace="$namespace"}, pod)
+    refresh: onVariableChange
+  
+  - name: interval
+    label: Interval
+    type: interval
+    values: [30s, 1m, 5m, 10m, 30m, 1h]
+    default: 5m</pre>
+  
+              <h3>Alertmanager Configuration</h3>
+              <pre class="monitoring">route:
+    group_by: ['alertname', 'severity']
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    receiver: 'slack-notifications'
+    routes:
+    - match:
+        severity: 'critical'
+      receiver: 'pager-duty'
+    
+  receivers:
+  - name: 'slack-notifications'
+    slack_configs:
+    - api_url: 'https://hooks.slack.com/services/XXX'
+      channel: '#alerts'
+      send_resolved: true
+      title: '{{ template "slack.title" . }}'
+      text: '{{ template "slack.text" . }}'
+    
+  - name: 'pager-duty'
+    pagerduty_configs:
+    - service_key: 'your-pagerduty-key'
+      description: '{{ .CommonAnnotations.summary }}'</pre>
+  
+              <h3>ELK Stack (Elasticsearch Queries)</h3>
+              <pre class="monitoring"># Поиск ошибок за последний час
+  GET /logs-*/_search
+  {
+    "query": {
+      "bool": {
+        "must": [
+          { "match": { "level": "ERROR" }},
+          { "range": { "@timestamp": { "gte": "now-1h" }}}
+        ]
+      }
+    },
+    "sort": [ { "@timestamp": "desc" } ]
+  }
+  
+  # Агрегация по статус кодам
+  GET /nginx-*/_search
+  {
+    "size": 0,
+    "aggs": {
+      "status_codes": {
+        "terms": { "field": "response" }
+      }
+    }
+  }
+  
+  # Среднее время ответа по API endpoint
+  GET /app-*/_search
+  {
+    "size": 0,
+    "aggs": {
+      "endpoints": {
+        "terms": { "field": "path.keyword" },
+        "aggs": {
+          "avg_response": { "avg": { "field": "response_time" }}
+        }
+      }
+    }
+  }</pre>
+  
+              <h3>Zabbix</h3>
+              <pre class="monitoring"># Основные команды zabbix_get/zabbix_sender
+zabbix_get -s 192.168.1.10 -k agent.ping
+  # Получить значение item с агента
+
+zabbix_sender -z zabbix.example.com -s "MyHost" -k custom.key -o 123
+  # Отправить произвольное значение на сервер Zabbix
+
+# Работа с zabbix_server/zabbix_agent
+systemctl status zabbix-server
+  # Проверить статус сервера Zabbix
+
+systemctl restart zabbix-agent
+  # Перезапустить агент Zabbix
+
+zabbix_agentd -t agent.ping
+  # Проверить работу item локально
+
+# Работа с конфигами
+cat /etc/zabbix/zabbix_agentd.conf
+  # Основной конфиг агента
+
+# Пример триггера (выражение)
+{MyHost:system.cpu.load[percpu,avg1].last()} > 2
+  # Триггер: средняя загрузка CPU за 1 мин > 2
+
+# Получение истории item через API (пример curl)
+curl -X POST -H 'Content-Type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "history.get",
+    "params": {
+      "output": "extend",
+      "history": 0,
+      "itemids": "12345",
+      "sortfield": "clock",
+      "sortorder": "DESC",
+      "limit": 5
+    },
+    "auth": "<token>",
+    "id": 1
+  }' http://zabbix.example.com/api_jsonrpc.php
+  # Получить последние 5 значений item через API</pre>
+          </div>
+      </div>
+  
+      <!-- Раздел Базы данных -->
+      <div class="cheatsheet" data-section="databases" style="display: block;">
+          <h2 id="databases-header" class="collapsed"><span class="tag" style="background:#6c3483;">Базы данных</span> Основные команды и примеры<span class="results-count">0</span></h2>
+          <div class="collapsible collapsed">
+              <div class="note">
+                  <strong>Пример:</strong> Получить список баз в PostgreSQL:
+                  <pre class="databases">psql -c '\l'</pre>
+              </div>
+              <h3>PostgreSQL</h3>
+              <pre class="databases"># Подключение к базе
+psql -h host -U user dbname
+
+# Список баз
+\l
+# Список таблиц
+\dt
+# Выполнить SQL-скрипт
+psql -f script.sql dbname
+# Бэкап
+pg_dump -U user dbname > dump.sql
+# Восстановление
+psql -U user dbname < dump.sql
+# Создать пользователя
+CREATE USER имя WITH PASSWORD 'пароль';
+# Дать права
+GRANT ALL PRIVILEGES ON DATABASE dbname TO имя;</pre>
+              <h3>Oracle</h3>
+              <pre class="databases"># Подключение
+sqlplus user/password@host:1521/SID
+# Список таблиц
+SELECT table_name FROM user_tables;
+# Выполнить скрипт
+@script.sql
+# Экспорт схемы
+expdp user/password@SID schemas=SCHEMA_NAME directory=DIR dumpfile=exp.dmp logfile=exp.log
+# Импорт схемы
+impdp user/password@SID schemas=SCHEMA_NAME directory=DIR dumpfile=exp.dmp logfile=imp.log
+</pre>
+              <h3>MySQL/MariaDB</h3>
+              <pre class="databases"># Подключение
+mysql -h host -u user -p dbname
+# Список баз
+SHOW DATABASES;
+# Список таблиц
+SHOW TABLES;
+# Выполнить SQL-скрипт
+mysql -u user -p dbname < script.sql
+# Бэкап
+mysqldump -u user -p dbname > dump.sql
+# Восстановление
+mysql -u user -p dbname < dump.sql
+# Создать пользователя
+CREATE USER 'user'@'%' IDENTIFIED BY 'pass';
+# Дать права
+GRANT ALL PRIVILEGES ON dbname.* TO 'user'@'%';
+FLUSH PRIVILEGES;</pre>
+              <h3>MongoDB</h3>
+              <pre class="databases"># Подключение
+mongo --host host --port 27017 -u user -p pass --authenticationDatabase admin
+# Список баз
+show dbs
+# Список коллекций
+show collections
+# Выполнить JS-скрипт
+mongo dbname script.js
+# Бэкап
+mongodump -d dbname -o /backup/dir
+# Восстановление
+mongorestore -d dbname /backup/dir/dbname
+# Создать пользователя
+use admin
+db.createUser({user: "user", pwd: "pass", roles:[{role:"readWrite",db:"dbname"}]})
+</pre>
+          </div>
+      </div>
+
+      <!-- Раздел GitLab -->
+      <div class="cheatsheet" data-section="gitlab" style="display: block;">
+          <h2 id="gitlab-header" class="collapsed"><span class="tag git-tag">GitLab</span> CI/CD и DevOps<span class="results-count">99</span></h2>
+          <div class="collapsible collapsed">
+              <div class="note">
+                  <strong>Пример:</strong> Создать issue через API:
+                  <pre class="ci-cd">curl --request POST --header "PRIVATE-TOKEN: <token>" \
+  --data '{"title":"Bug","description":"Описание бага"}' \
+  "https://gitlab.example.com/api/v4/projects/1/issues"</pre>
+              </div>
+              <h3>Основные команды gitlab-runner</h3>
+              <pre class="ci-cd">sudo gitlab-runner register
+  # Регистрация нового runner
+
+gitlab-runner list
+  # Список всех runner'ов
+
+gitlab-runner status
+  # Статус runner'а
+
+gitlab-runner run
+  # Запуск runner'а вручную</pre>
+              <h3>Пример .gitlab-ci.yml для Node.js</h3>
+              <pre class="ci-cd">stages:
+  - install
+  - test
+  - build
+
+install:
+  stage: install
+  script:
+    - npm ci
+
+test:
+  stage: test
+  script:
+    - npm test
+
+build:
+  stage: build
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/</pre>
+              <h3>Пример деплоя через SSH</h3>
+              <pre class="ci-cd">.deploy_prod:
+  stage: deploy
+  script:
+    - rsync -avz ./dist/ user@host:/var/www/html
+  only:
+    - main</pre>
+              <h3>Пример вызова API для создания issue</h3>
+              <pre class="ci-cd">curl --request POST --header "PRIVATE-TOKEN: <token>" \
+  --data '{"title":"Bug","description":"Описание бага"}' \
+  "https://gitlab.example.com/api/v4/projects/1/issues"</pre>
+              <div class="note">Документация: <a href="https://docs.gitlab.com/ee/ci/" target="_blank">https://docs.gitlab.com/ee/ci/</a></div>
+          </div>
+      </div>
+    </div>
+    <div id="footer-note" class="note">
+        <strong>Примечание:</strong> Эта шпаргалка регулярно обновляется. Последнее обновление: 2023-10-15.
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
